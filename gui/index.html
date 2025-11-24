@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ComfyUI - Generator</title>
+  <style>
+    * { box-sizing: border-box; }
+    body { font-family: 'Segoe UI', sans-serif; margin: 0; padding: 0; background: linear-gradient(to bottom right, #1e1e2f, #2c2c3c); color: #f0f0f0; min-height: 100vh; overflow-x: hidden; }
+    h2 { padding: 15px 20px; margin: 0; background-color: #333; display: flex; justify-content: center; align-items: center; gap: 20px; flex-wrap: wrap; box-shadow: 0 4px 10px rgba(0,0,0,0.3); z-index: 10; border-bottom: 1px solid #444; }
+    .container { max-width: 1600px; margin: 30px auto; padding: 0 20px; display: flex; flex-direction: column; gap: 25px; }
+    .section { background-color: #2a2a3a; padding: 20px; border-radius: 12px; box-shadow: 0 6px 12px rgba(0,0,0,0.2); border: 1px solid #3a3a4a; }
+    h3 { color: #4caf50; border-bottom: 2px solid #4caf50; padding-bottom: 10px; margin-top: 0; }
+    .config-flex { display: flex; flex-wrap: wrap; gap: 20px; align-items: flex-end; }
+    .config-item-large { flex: 2; min-width: 300px; }
+    .config-buttons { display: flex; gap: 10px; flex: 1.5; min-width: 300px; }
+    .controls-grid-container { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; align-items: start; }
+    .output-wrapper { display: grid; grid-template-columns: 1fr 1fr; gap: 25px; }
+    @media (max-width: 1000px) { .controls-grid-container, .output-wrapper { grid-template-columns: 1fr; } }
+    label { font-weight: 600; display: block; margin-top: 8px; font-size: 13px; color: #ccc; }
+    input, select, textarea { margin-top: 5px; width: 100%; padding: 8px 10px; border-radius: 6px; border: 1px solid #555; background-color: #444; color: #fff; font-family: monospace; font-size: 13px; }
+    input:focus, select:focus, textarea:focus { outline: none; border-color: #4caf50; }
+    textarea { min-height: 160px; resize: vertical; }
+    input, select { height: 40px; min-height: 40px; }
+    button { padding: 10px 20px; background-color: #4caf50; border: none; border-radius: 6px; color: white; font-weight: bold; cursor: pointer; transition: all 0.2s; width: 100%; }
+    button:hover:not(:disabled) { background-color: #45a049; transform: translateY(-2px); }
+    button:disabled { background-color: #555; cursor: not-allowed; }
+    button.secondary { background-color: #2196F3; }
+    button.secondary:hover:not(:disabled) { background-color: #0b7dda; }
+    button.outline { background-color: transparent; border: 1px solid #aaa; color: #ccc; width: auto; }
+    button#cancelBtn { background-color: #f44336; }
+    .file-upload { display: inline-block; padding: 10px 20px; background-color: #2196F3; color: white; border-radius: 6px; cursor: pointer; text-align: center; width: 100%; font-weight: bold; font-size: 14px; }
+    #fileInput { display: none; }
+    #status { margin-top: 15px; padding: 10px; border-radius: 6px; text-align: center; font-weight: bold; font-size: 13px; }
+    .status-info { background: rgba(33, 150, 243, 0.15); color: #64b5f6; }
+    .status-success { background: rgba(76, 175, 80, 0.15); color: #81c784; }
+    .status-error { background: rgba(244, 67, 54, 0.15); color: #e57373; }
+    .control-group { background-color: #353545; padding: 15px; border-radius: 8px; border-left: 4px solid #4caf50; height: 100%; }
+    .control-group h4 { margin: 0 0 15px 0; color: #fff; display: flex; justify-content: space-between; }
+    .node-type-label { font-size: 11px; color: #aaa; background: #222; padding: 3px 8px; border-radius: 4px; }
+    .progress-bar { width: 100%; height: 20px; background: #444; border-radius: 10px; overflow: hidden; margin-top: 15px; }
+    .progress-fill { height: 100%; background: linear-gradient(90deg, #4caf50, #66bb6a); width: 0%; text-align: center; font-size: 11px; line-height: 20px; }
+    .result-item { margin-bottom: 20px; background: #1a1a25; padding: 10px; border-radius: 8px; border: 1px solid #444; }
+    .result-label { color: #888; font-size: 12px; margin-bottom: 5px; display: block; }
+    #imageContainer img, #previewImage { max-width: 100%; max-height: 500px; border-radius: 8px; border: 2px solid #444; display: block; margin: 0 auto; cursor: zoom-in; transition: transform 0.2s; }
+    #imageContainer img:hover { border-color: #4caf50; transform: scale(1.02); }
+    .lang-switcher { display: flex; gap: 5px; align-items: center; }
+    .lang-btn { margin: 0; padding: 6px 12px; font-size: 12px; background-color: #555; width: auto; }
+    .lang-btn.active { background-color: #4caf50; pointer-events: none; }
+    .translate-btn { margin-left: 15px; padding: 6px 15px; font-size: 12px; width: auto; background-color: #673ab7; display: flex; align-items: center; gap: 5px; }
+    .translate-btn:hover { background-color: #5e35b1; }
+    .batch-wrapper { display: flex; align-items: center; gap: 10px; background: #353545; padding: 10px; border-radius: 8px; margin-top: 15px; border-left: 4px solid #2196F3; }
+    .checkbox-wrapper { display: flex; align-items: center; gap: 10px; margin-top: 5px; background: #333; padding: 8px; border-radius: 5px; border: 1px solid #555; }
+    .checkbox-wrapper input { width: 20px; height: 20px; margin: 0; cursor: pointer; }
+    .checkbox-wrapper label { margin: 0; cursor: pointer; }
+    .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; }
+    .modal-content { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #2a2a3a; padding: 25px; border-radius: 10px; width: 90%; max-width: 700px; max-height: 85vh; display: flex; flex-direction: column; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+    .modal-body { overflow-y: auto; flex: 1; border: 1px solid #444; padding: 10px; background: #222; }
+    .node-checkbox-item { display: flex; align-items: center; padding: 10px; border-bottom: 1px solid #333; }
+    .node-checkbox-item input { width: auto; margin-right: 15px; transform: scale(1.2); }
+    #fullscreenModal { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; overflow: hidden; background-color: rgba(0,0,0,0.95); backdrop-filter: blur(5px); }
+    #fullscreenImage { margin: auto; display: block; max-width: 95%; max-height: 95%; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); box-shadow: 0 0 50px rgba(0,0,0,0.5); border-radius: 4px; }
+    .close-fullscreen { position: absolute; top: 20px; right: 35px; color: #f1f1f1; font-size: 40px; font-weight: bold; transition: 0.3s; cursor: pointer; z-index: 2001; }
+    .close-fullscreen:hover { color: #bbb; text-decoration: none; cursor: pointer; }
+    .trans-area { width: 100%; height: 120px; background: #222; border: 1px solid #555; color: #fff; padding: 10px; resize: none; margin-bottom: 10px; font-family: sans-serif;}
+    .trans-label { color: #aaa; font-size: 12px; margin-bottom: 5px; display: block;}
+    .trans-status { font-size: 12px; color: #FFB74D; margin-top: 5px; height: 20px; }
+  </style>
+</head>
+<body>
+  <h2>
+    <span data-lang="title">ComfyUI - Workflow Generator</span>
+    <div class="lang-switcher">
+      <button class="lang-btn active" onclick="setLanguage('en')" id="lang-en">EN</button>
+      <button class="lang-btn" onclick="setLanguage('pl')" id="lang-pl">PL</button>
+      <button class="translate-btn" onclick="openTranslator()">🌐 Tłumacz (AI)</button>
+    </div>
+  </h2>
+
+  <div class="container">
+    <div class="section config-section">
+      <h3 data-lang="config">⚙️ Configuration</h3>
+      <div class="config-flex">
+        <div class="config-item-large">
+            <label data-lang="apiUrl">ComfyUI API URL:</label>
+            <input type="text" id="apiUrl" value="http://127.0.0.1:8188" />
+        </div>
+        <div class="config-item-large">
+            <label data-lang="loadWorkflow">Load workflow (JSON):</label>
+            <label for="fileInput" class="file-upload" data-lang="chooseFile">📁 Choose JSON file</label>
+            <input type="file" id="fileInput" accept=".json" onchange="loadWorkflowFile()" />
+        </div>
+        <div class="config-buttons">
+             <button onclick="testConnection()" class="secondary" data-lang="testConnection">🔌 Test</button>
+             <button onclick="loadModels()" class="secondary" data-lang="loadModels">📋 Definitions</button>
+             <button onclick="openNodeSelector()" class="secondary" id="selectNodesBtn" disabled data-lang="selectNodes">🔳 Select</button>
+        </div>
+      </div>
+      <div id="workflowInfo" style="margin-top: 10px; font-size: 13px; color: #aaa;"></div>
+      <div id="status"></div>
+    </div>
+
+    <div class="section">
+        <h3 data-lang="workflowControls">🎨 Settings</h3>
+        <div class="batch-wrapper">
+            <div style="flex:1;">
+                <label for="batchCountInput">Liczba obrazów (Batch):</label>
+                <input type="number" id="batchCountInput" value="1" min="1" max="100" style="font-weight: bold;">
+            </div>
+            <div style="flex:1;">
+                <label>Opcje:</label>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" id="chkRandomSeed" checked>
+                    <label for="chkRandomSeed">🎲 Losowy Seed (Random)</label>
+                </div>
+            </div>
+        </div>
+        <div id="controlsContainer" class="controls-grid-container" style="margin-top: 15px;"></div>
+        <div id="staticMessage" style="color: #888; text-align: center; padding: 30px; border: 2px dashed #444; grid-column: 1 / -1;" data-lang="loadWorkflowMsg">👆 Load workflow to see controls</div>
+        <div style="display: flex; gap: 15px; margin-top: 20px;">
+          <button id="generateBtn" onclick="startBatch()" disabled data-lang="generate" style="flex: 2; font-size: 18px;">🎨 Generuj</button>
+          <button id="cancelBtn" onclick="cancelGeneration()" disabled data-lang="cancel" style="flex: 1;">⛔ Zatrzymaj wszystko</button>
+          <button onclick="saveImage()" disabled id="saveBtn" data-lang="savePng" style="flex: 1;">💾 Zapisz</button>
+        </div>
+    </div>
+
+    <div class="output-wrapper">
+        <div class="section">
+            <h3 data-lang="progressPreview">⏳ Progress & Preview</h3>
+            <div id="timeInfo" style="display: none; background: #333; padding: 8px; border-radius: 6px; font-size: 13px; margin-bottom: 10px;">
+                <span data-lang="timeElapsed">⏱️ Time:</span> <strong id="elapsedTime">0s</strong>
+            </div>
+            <div class="progress-bar" id="progressBar" style="display: none;"><div class="progress-fill" id="progressFill">0%</div></div>
+            <p id="previewStatus" style="color: #888; font-size: 0.9em; text-align: center;">Waiting...</p>
+            <div style="min-height: 300px; display: flex; align-items: center; justify-content: center; background: #222; border-radius: 8px;">
+                <img id="previewImage" style="display: none;" />
+                <span id="previewPlaceholder" style="color: #555;">Preview Area</span>
+            </div>
+        </div>
+        <div class="section" id="result">
+            <h3 data-lang="finalResult">🖼️ Final Result (Click to Zoom)</h3>
+            <div id="imageContainer" style="min-height: 300px; background: #222; border-radius: 8px; padding: 10px; display: flex; flex-direction: column; align-items: center; justify-content: flex-start;">
+                 <span style="color: #555; margin-top: 50px;">No image yet</span>
+            </div>
+        </div>
+    </div>
+  </div>
+
+  <!-- MODALS -->
+  <div id="nodeSelectorModal" class="modal-overlay">
+    <div class="modal-content">
+      <div style="display:flex; justify-content:space-between; margin-bottom:15px;">
+        <h3 style="margin:0; border:none;">Select Nodes</h3>
+        <button class="outline" onclick="closeNodeSelector()" style="width:auto; padding:5px 10px;">✕</button>
+      </div>
+      <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+        <button class="outline" onclick="selectAllNodes(true)" style="width: auto; font-size:12px;">Select All</button>
+        <button class="outline" onclick="selectAllNodes(false)" style="width: auto; font-size:12px;">Deselect All</button>
+      </div>
+      <div id="nodeList" class="modal-body"></div>
+      <div style="margin-top:15px; text-align:right;">
+        <button onclick="applyNodeSelection()" style="width: auto;">Apply Selection</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="translatorModal" class="modal-overlay">
+      <div class="modal-content" style="height: 550px;">
+          <div style="display:flex; justify-content:space-between; margin-bottom:15px;">
+            <h3 style="margin:0; border:none;">Tłumacz (Polski -> Angielski)</h3>
+            <button class="outline" onclick="closeTranslator()" style="width:auto; padding:5px 10px;">✕</button>
+          </div>
+          <span class="trans-label">Tekst po polsku:</span>
+          <textarea id="transInput" class="trans-area" placeholder="Wpisz tekst do przetłumaczenia..."></textarea>
+          <button onclick="doTranslate()" id="btnTransAction">Tłumacz</button>
+          <div id="transStatus" class="trans-status"></div>
+          <span class="trans-label" style="margin-top:15px;">Wynik (Angielski):</span>
+          <textarea id="transOutput" class="trans-area" readonly></textarea>
+          <div style="display:flex; gap:10px;">
+              <button class="secondary" onclick="copyTransToClipboard()">Kopiuj do schowka</button>
+          </div>
+      </div>
+  </div>
+
+  <div id="fullscreenModal" onclick="closeFullscreen()">
+      <span class="close-fullscreen">&times;</span>
+      <img id="fullscreenImage">
+  </div>
+
+<script type="module">
+    import { pipeline, env } from 'https://cdn.jsdelivr.net/npm/@xenova/transformers@2.17.2';
+    env.allowLocalModels = false; env.useBrowserCache = true; 
+    let translator = null;
+    window.doTranslate = async function() {
+        const text = document.getElementById('transInput').value;
+        if (!text) return;
+        const statusEl = document.getElementById('transStatus');
+        const btn = document.getElementById('btnTransAction');
+        const outputEl = document.getElementById('transOutput');
+        btn.disabled = true;
+        statusEl.textContent = "Ładowanie AI... (Pierwszy raz ~60MB)";
+        try {
+            if (!translator) translator = await pipeline('translation', 'Xenova/opus-mt-pl-en');
+            statusEl.textContent = "Tłumaczenie...";
+            const result = await translator(text);
+            outputEl.value = result[0].translation_text;
+            statusEl.textContent = "Gotowe!"; statusEl.style.color = "#4caf50";
+        } catch (error) {
+            statusEl.textContent = "Błąd: " + error.message; statusEl.style.color = "#f44336";
+        } finally { btn.disabled = false; }
+    }
+</script>
+
+<script>
+  const DEBUG_MODE = false;
+  if (!DEBUG_MODE) { console.log = function() {}; console.error = function() {}; }
+
+  // UI Logic
+  function openTranslator() { document.getElementById('translatorModal').style.display = 'block'; }
+  function closeTranslator() { document.getElementById('translatorModal').style.display = 'none'; }
+  function copyTransToClipboard() {
+      const copyText = document.getElementById("transOutput");
+      copyText.select();
+      document.execCommand("copy"); 
+      const btn = event.target; const original = btn.textContent; btn.textContent = "Skopiowano!";
+      setTimeout(() => btn.textContent = original, 1500);
+  }
+
+  const translations = {
+    en: { title: 'ComfyUI - Workflow Generator', config: '⚙️ Configuration', apiUrl: 'ComfyUI API URL:', loadWorkflow: 'Load workflow (JSON):', chooseFile: '📁 Choose JSON file', testConnection: '🔌 Test', loadModels: '📋 Definitions', selectNodes: '🔳 Select', workflowControls: '🎨 Settings', loadWorkflowMsg: '👆 Load workflow to see controls', generate: '🎨 Generate', cancel: '⛔ Stop All', savePng: '💾 Save PNG', timeElapsed: '⏱️ Time:', progressPreview: '⏳ Progress & Preview', finalResult: '🖼️ Final Result (Click to Zoom)', modelsLoaded: '✅ Definitions ({count})', workflowLoaded: '✅ Loaded: {name}', selectVisibleNodes: 'Select Nodes', apply: 'Apply', generating: 'Generating...', done: 'Done!', error: 'Error: ', disconnected: 'Disconnected', connecting: 'Connecting...' },
+    pl: { title: 'ComfyUI - Generator', config: '⚙️ Konfiguracja', apiUrl: 'Adres API:', loadWorkflow: 'Workflow (JSON):', chooseFile: '📁 Wybierz plik', testConnection: '🔌 Testuj', loadModels: '📋 Definicje', selectNodes: '🔳 Wybierz', workflowControls: '🎨 Ustawienia', loadWorkflowMsg: '👆 Wczytaj plik aby edytować', generate: '🎨 Generuj', cancel: '⛔ Zatrzymaj wszystko', savePng: '💾 Zapisz PNG', timeElapsed: '⏱️ Czas:', progressPreview: '⏳ Podgląd', finalResult: '🖼️ Wynik (Kliknij by powiększyć)', modelsLoaded: '✅ Definicje ({count})', workflowLoaded: '✅ Wczytano: {name}', selectVisibleNodes: 'Wybierz nody', apply: 'Zatwierdź', generating: 'Generowanie...', done: 'Zakończono!', error: 'Błąd: ', disconnected: 'Rozłączono', connecting: 'Łączenie...' }
+  };
+
+  let currentLang = 'pl';
+  let currentWorkflow = null;
+  let nodeDefinitions = {}; 
+  let visibleNodeIds = new Set();
+  let nodeTitles = {}; 
+  let wsConnection = null;
+  let clientId = crypto.randomUUID();
+  let currentPromptId = null;
+  let generatedImages = [];
+  let timerInterval = null;
+  let autoConnectInterval = null;
+  
+  let batchTotal = 1;
+  let batchCurrent = 0;
+  let stopRequested = false; 
+
+  function openFullscreen(src) { document.getElementById("fullscreenModal").style.display = "block"; document.getElementById("fullscreenImage").src = src; }
+  function closeFullscreen() { document.getElementById("fullscreenModal").style.display = "none"; }
+
+  document.addEventListener('keydown', function(event) {
+      if (event.key === "Escape") { closeFullscreen(); closeNodeSelector(); closeTranslator(); }
+  });
+
+  async function saveImageFromPython(imgUrl) {
+    if (!window.chrome || !window.chrome.webview) { const link = document.createElement('a'); link.href = imgUrl; link.download = `comfy_${Date.now()}.png`; link.click(); return; }
+    try {
+        showStatus('Zapisywanie...', 'info');
+        const response = await fetch(imgUrl);
+        const blob = await response.blob();
+        const reader = new FileReader();
+        reader.readAsDataURL(blob); 
+        reader.onloadend = function() {
+            window.chrome.webview.postMessage(reader.result);
+            showStatus('Wysłano do zapisu', 'success');
+        }
+    } catch(e) { showStatus('Błąd: ' + e.message, 'error'); }
+  }
+
+  function setLanguage(lang) { currentLang = lang; document.querySelectorAll('.lang-btn').forEach(b => b.classList.toggle('active', b.id === `lang-${lang}`)); document.querySelectorAll('[data-lang]').forEach(el => { const k = el.getAttribute('data-lang'); if(translations[lang][k]) if(el.tagName==='INPUT'||el.tagName==='BUTTON') el.textContent=translations[lang][k]; else el.innerText=translations[lang][k]; }); }
+  function t(k, p={}) { let tx = translations[currentLang][k] || k; for(const [key, v] of Object.entries(p)) tx = tx.replace(`{${key}}`, v); return tx; }
+  function showStatus(m, t) { const el = document.getElementById('status'); el.textContent = m; el.className = `status-${t}`; }
+
+  function startAutoConnect() {
+      showStatus(t('connecting'), 'info');
+      if(autoConnectInterval) clearInterval(autoConnectInterval);
+      autoConnectInterval = setInterval(async () => { if(await testConnection(true)) clearInterval(autoConnectInterval); }, 2000);
+  }
+
+  async function testConnection(silent = false) {
+    const apiUrl = document.getElementById('apiUrl').value.replace(/\/$/, '');
+    try { await fetch(`${apiUrl}/system_stats`); showStatus('✅ Połączono!', 'success'); loadModels(); connectWebSocket(); return true; } 
+    catch (e) { if(!silent) showStatus('Błąd połączenia', 'error'); return false; }
+  }
+
+  async function loadModels() {
+    const apiUrl = document.getElementById('apiUrl').value.replace(/\/$/, '');
+    try {
+      const r = await fetch(`${apiUrl}/object_info`);
+      nodeDefinitions = await r.json();
+      showStatus(t('modelsLoaded', { count: Object.keys(nodeDefinitions).length }), 'success');
+      if (currentWorkflow) renderControls();
+    } catch (e) { showStatus('Błąd definicji', 'error'); }
+  }
+
+  function connectWebSocket() {
+    if (wsConnection && wsConnection.readyState === WebSocket.OPEN) return;
+    const apiUrl = document.getElementById('apiUrl').value.replace(/\/$/, '');
+    const wsUrl = apiUrl.replace(/^http/, 'ws') + `/ws?clientId=${clientId}`;
+    wsConnection = new WebSocket(wsUrl);
+    wsConnection.onmessage = async (event) => {
+      if (event.data instanceof Blob) {
+        const url = URL.createObjectURL(event.data.slice(8));
+        const img = document.getElementById('previewImage');
+        img.onload = () => URL.revokeObjectURL(url); img.src = url; img.style.display = 'block';
+        document.getElementById('previewPlaceholder').style.display = 'none';
+        return;
+      }
+      try {
+        const msg = JSON.parse(event.data);
+        if (msg.type === 'progress') {
+            const p = Math.round((msg.data.value / msg.data.max) * 100);
+            document.getElementById('progressBar').style.display = 'block';
+            document.getElementById('progressFill').style.width = `${p}%`;
+            document.getElementById('progressFill').textContent = `${p}%`;
+        } 
+        else if (msg.type === 'execution_success') {
+             if (!stopRequested) finalizeGeneration();
+        } 
+        else if (msg.type === 'executing') document.getElementById('previewStatus').textContent = `Node: ${msg.data.node}`;
+      } catch (e) { }
+    };
+  }
+
+  function loadWorkflowFile() {
+    const file = document.getElementById('fileInput').files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        let json = JSON.parse(e.target.result);
+        nodeTitles = {};
+        if (json.extra_data?.extra_pnginfo?.workflow?.nodes) json.extra_data.extra_pnginfo.workflow.nodes.forEach(n => { if(n.id && n.title) nodeTitles[n.id] = n.title; });
+        if (json.templates) json = json.templates[0];
+        currentWorkflow = json; 
+        document.getElementById('workflowInfo').textContent = file.name;
+        document.getElementById('selectNodesBtn').disabled = false;
+        openNodeSelector();
+        document.getElementById('generateBtn').disabled = false;
+      } catch (err) { showStatus('Błąd JSON', 'error'); }
+    };
+    reader.readAsText(file);
+  }
+
+  function openNodeSelector() {
+    const list = document.getElementById('nodeList'); list.innerHTML = '';
+    const validNodes = [];
+    Object.entries(currentWorkflow).forEach(([nodeId, node]) => {
+        const def = nodeDefinitions[node.class_type];
+        const inputs = node.inputs || {};
+        let hasEditable = false;
+        for (const [key, val] of Object.entries(inputs)) {
+            if (Array.isArray(val)) continue;
+            if (def) { if (def.input?.required?.[key] || def.input?.optional?.[key]) { hasEditable = true; break; } if (typeof val === 'string' && val.length > 0) hasEditable = true; }
+            else { if (typeof val === 'number' || typeof val === 'string') hasEditable = true; }
+        }
+        if (hasEditable) validNodes.push({ id: nodeId, title: nodeTitles[nodeId] || node._meta?.title || node.class_type });
+    });
+    validNodes.sort((a, b) => parseInt(a.id) - parseInt(b.id));
+    validNodes.forEach(n => {
+        const div = document.createElement('div'); div.className = 'node-checkbox-item';
+        const isChecked = visibleNodeIds.size === 0 ? true : visibleNodeIds.has(n.id);
+        div.innerHTML = `<input type="checkbox" id="chk_${n.id}" value="${n.id}" ${isChecked ? 'checked' : ''}><label for="chk_${n.id}"><b>${n.title}</b> <small>(ID:${n.id})</small></label>`;
+        list.appendChild(div);
+    });
+    document.getElementById('nodeSelectorModal').style.display = 'block';
+  }
+
+  function closeNodeSelector() { document.getElementById('nodeSelectorModal').style.display = 'none'; }
+  function selectAllNodes(select) { document.querySelectorAll('#nodeList input').forEach(chk => chk.checked = select); }
+  function applyNodeSelection() {
+    visibleNodeIds.clear();
+    document.querySelectorAll('#nodeList input:checked').forEach(chk => visibleNodeIds.add(chk.value));
+    closeNodeSelector(); renderControls();
+  }
+
+  // --- OPTIMALIZACJA RENDEROWANIA (DocumentFragment) ---
+  function renderControls() {
+    const container = document.getElementById('controlsContainer');
+    container.innerHTML = '';
+    document.getElementById('staticMessage').style.display = 'none';
+    
+    const fragment = document.createDocumentFragment();
+
+    Object.entries(currentWorkflow).forEach(([nodeId, node]) => {
+      if (!visibleNodeIds.has(nodeId)) return;
+      
+      const def = nodeDefinitions?.[node.class_type];
+      const inputs = node.inputs || {};
+      let hasControls = false;
+      
+      const wrapper = document.createElement('div'); 
+      wrapper.className = 'control-group';
+      wrapper.innerHTML = `<h4>${nodeTitles[nodeId] || node._meta?.title || node.class_type} <span class="node-type-label">#${nodeId}</span></h4>`;
+      
+      Object.keys(inputs).forEach(inputName => {
+        const val = inputs[inputName];
+        if (Array.isArray(val)) return;
+
+        // Bezpieczne sprawdzanie definicji
+        let inputDef = null;
+        if (def && def.input) {
+             if (def.input.required?.[inputName]) inputDef = def.input.required[inputName];
+             else if (def.input.optional?.[inputName]) inputDef = def.input.optional[inputName];
+        }
+        
+        if (inputDef || typeof val === 'string' || typeof val === 'number') {
+            hasControls = true;
+            const typeInfo = inputDef ? inputDef[0] : (typeof val === 'number' ? 'INT' : 'STRING');
+            const config = (inputDef && inputDef[1]) ? inputDef[1] : {};
+            
+            if (Array.isArray(typeInfo)) {
+                const w = document.createElement('div'); w.innerHTML = `<label>${inputName}</label>`;
+                const sel = document.createElement('select'); sel.id = `n_${nodeId}_${inputName}`;
+                const opts = [...typeInfo]; if(!opts.includes(val)) opts.unshift(val);
+                opts.forEach(o => { 
+                    const op = document.createElement('option'); 
+                    op.value = o; 
+                    op.text = o; 
+                    if(o===val) op.selected=true; 
+                    sel.appendChild(op); 
+                });
+                w.appendChild(sel); wrapper.appendChild(w);
+            } else if (typeInfo === 'INT' || typeInfo === 'FLOAT') {
+                const w = document.createElement('div'); w.innerHTML = `<label>${inputName}</label>`;
+                const inp = document.createElement('input'); inp.type = 'number'; inp.value = val; inp.id = `n_${nodeId}_${inputName}`;
+                if(config.min !== undefined) inp.min = config.min; 
+                if(config.max !== undefined) inp.max = config.max; 
+                inp.step = config.step || (Number.isInteger(val) ? 1 : 0.01);
+                w.appendChild(inp); wrapper.appendChild(w);
+            } else {
+                const w = document.createElement('div'); w.innerHTML = `<label>${inputName}</label>`;
+                // Logika dużych pól tekstowych
+                const isLong = config.multiline || 
+                              (typeof val === 'string' && val.length > 50) || 
+                              inputName.toLowerCase().includes('text') || 
+                              inputName.toLowerCase().includes('prompt');
+                              
+                const el = document.createElement(isLong ? 'textarea' : 'input');
+                if(!isLong) el.type = 'text'; 
+                el.value = val; 
+                el.id = `n_${nodeId}_${inputName}`;
+                w.appendChild(el); wrapper.appendChild(w);
+            }
+        }
+      });
+      if(hasControls) fragment.appendChild(wrapper);
+    });
+    
+    container.appendChild(fragment);
+  }
+
+  function updateWorkflowFromUI() {
+    const randomSeed = document.getElementById('chkRandomSeed').checked;
+    Object.entries(currentWorkflow).forEach(([nodeId, node]) => {
+      if (!visibleNodeIds.has(nodeId)) return;
+      Object.keys(node.inputs).forEach(key => {
+        const el = document.getElementById(`n_${nodeId}_${key}`);
+        if(el) {
+            let val = (el.type === 'number') ? parseFloat(el.value) : el.value;
+            if(key === 'seed') {
+                if (randomSeed || parseFloat(el.value) === -1) {
+                    val = Math.floor(Math.random() * 1000000000000);
+                    el.value = val;
+                }
+            }
+            node.inputs[key] = val;
+        }
+      });
+    });
+  }
+
+  function startBatch() {
+      const batchInput = document.getElementById('batchCountInput');
+      batchTotal = parseInt(batchInput.value) || 1;
+      batchCurrent = 0;
+      stopRequested = false;
+      
+      document.getElementById('generateBtn').disabled = true;
+      document.getElementById('cancelBtn').disabled = false; // Enable Cancel
+      document.getElementById('imageContainer').innerHTML = '';
+      document.getElementById('imageContainer').style.background = '#222';
+      document.getElementById('previewImage').style.display = 'none';
+      document.getElementById('previewPlaceholder').style.display = 'block';
+
+      processNextInBatch();
+  }
+
+  async function processNextInBatch() {
+      if (stopRequested) { resetUI(); return; }
+      if (batchCurrent >= batchTotal) {
+          document.getElementById('previewStatus').textContent = `Zakończono serię (${batchCurrent}/${batchTotal})`;
+          resetUI(); return;
+      }
+      batchCurrent++;
+      document.getElementById('previewStatus').textContent = `Generowanie ${batchCurrent} z ${batchTotal}...`;
+      await generateImage();
+  }
+
+  async function generateImage() {
+    updateWorkflowFromUI();
+    startTimer();
+    const apiUrl = document.getElementById('apiUrl').value.replace(/\/$/, '');
+    try {
+      const res = await fetch(`${apiUrl}/prompt`, { method: 'POST', body: JSON.stringify({ prompt: currentWorkflow, client_id: clientId }) });
+      const data = await res.json();
+      currentPromptId = data.prompt_id;
+      showStatus(`Batch ${batchCurrent}/${batchTotal} - ID: ${currentPromptId}`, 'info');
+    } catch (e) { stopRequested = true; resetUI(); showStatus('Błąd API', 'error'); }
+  }
+
+  async function finalizeGeneration() {
+    if (stopRequested) return;
+
+    const apiUrl = document.getElementById('apiUrl').value.replace(/\/$/, '');
+    const res = await fetch(`${apiUrl}/history/${currentPromptId}`);
+    const data = await res.json();
+    const outputs = data[currentPromptId].outputs;
+    const container = document.getElementById('imageContainer');
+    container.style.background = 'transparent';
+    if(container.innerHTML.includes('No image yet')) container.innerHTML = '';
+
+    Object.keys(outputs).forEach(nodeId => {
+       if (outputs[nodeId].images) {
+          outputs[nodeId].images.forEach(img => {
+              const src = `${apiUrl}/view?filename=${img.filename}&subfolder=${img.subfolder}&type=${img.type}`;
+              generatedImages.push(src);
+              const w = document.createElement('div'); w.className = 'result-item';
+              w.innerHTML = `<span class="result-label">Obraz #${batchCurrent} (${nodeTitles[nodeId] || nodeId})</span>`;
+              const el = document.createElement('img'); el.src = src;
+              el.onclick = function() { openFullscreen(src); };
+              el.title = "Kliknij aby powiększyć";
+              w.appendChild(el); container.prepend(w);
+          });
+       }
+    });
+    document.getElementById('saveBtn').disabled = false;
+    if (!stopRequested) setTimeout(processNextInBatch, 200);
+  }
+
+  async function cancelGeneration() {
+    stopRequested = true;
+    const apiUrl = document.getElementById('apiUrl').value.replace(/\/$/, '');
+    showStatus('Zatrzymywanie...', 'warning');
+    try { await fetch(`${apiUrl}/interrupt`, { method: 'POST' }); } catch (e) { }
+    try { await fetch(`${apiUrl}/queue`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({clear: true}) }); } catch (e) { }
+    document.getElementById('previewStatus').textContent = '⛔ Zatrzymano';
+    resetUI();
+  }
+
+  function resetUI() {
+      document.getElementById('generateBtn').disabled = false;
+      document.getElementById('cancelBtn').disabled = true;
+      document.getElementById('progressBar').style.display = 'none';
+      stopTimer();
+  }
+
+  function saveImage() { if(generatedImages.length > 0) saveImageFromPython(generatedImages[generatedImages.length-1]); }
+
+  function startTimer() {
+    const start = Date.now();
+    document.getElementById('timeInfo').style.display = 'block';
+    if (timerInterval) clearInterval(timerInterval);
+    timerInterval = setInterval(() => {
+      document.getElementById('elapsedTime').innerText = Math.floor((Date.now() - start) / 1000) + 's';
+    }, 1000);
+  }
+  function stopTimer() { clearInterval(timerInterval); }
+
+  setLanguage('pl');
+  startAutoConnect();
+</script>
+</body>
+</html>

@@ -1,0 +1,18 @@
+# Visual Studio
+.vs/
+bin/
+obj/
+*.user
+*.suo
+*.pdb
+
+# Windows
+Thumbs.db
+Desktop.ini
+
+# ComfyUI (żeby nie wysłać przez przypadek całego Comfy)
+ComfyUI/
+python_embedded/
+python_standalone/
+webview_data/
+*.log
