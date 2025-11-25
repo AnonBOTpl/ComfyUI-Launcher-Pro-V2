@@ -7,8 +7,7 @@
 A lightweight, standalone C# launcher and advanced HTML/JS Generator UI for **ComfyUI Portable**. 
 Designed to replace the default bat files and provide a user-friendly experience without complex installation.
 
-![Screenshot](https://placehold.co/800x450?text=Add+Your+Screenshot+Here)
-*(Add a screenshot of your app here)*
+![Screenshot](https://github.com/AnonBOTpl/ComfyUI-Launcher-Pro-V2/blob/main/screen-Launcher.png)
 
 ## ✨ Key Features
 
