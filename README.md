@@ -8,6 +8,7 @@ A lightweight, standalone C# launcher and advanced HTML/JS Generator UI for **Co
 Designed to replace the default bat files and provide a user-friendly experience without complex installation.
 
 ![Screenshot](https://github.com/AnonBOTpl/ComfyUI-Launcher-Pro-V2/blob/main/screen-Launcher.png)
+![Screenshot](https://github.com/AnonBOTpl/ComfyUI-Launcher-Pro-V2/blob/main/screen-Generator.png)
 
 ## ✨ Key Features
 
