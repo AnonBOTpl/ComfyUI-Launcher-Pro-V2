@@ -3,7 +3,6 @@
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Platform](https://img.shields.io/badge/platform-Windows-lightgrey.svg)](https://www.microsoft.com/windows)
 
-**[English]** | [Polski](#-comfyui-launcher-pro---wersja-polska)
 
 A lightweight, standalone C# launcher and advanced HTML/JS Generator UI for **ComfyUI Portable**. 
 Designed to replace the default bat files and provide a user-friendly experience without complex installation.
