@@ -38,15 +38,25 @@ Designed to replace the default bat files and provide a user-friendly experience
     ```
 4.  Run `ComfyLauncher.exe`.
 
+## 🎨 How to use the Generator
+
+1.  **Configuration:**
+    *   Click **"Choose JSON file"** to load your ComfyUI workflow (API format).
+    *   *(Optional)* Click **"Test Connection"** to verify if ComfyUI is running.
+2.  **Customize Interface:**
+    *   Click **"🔳 Select Nodes"** to choose which parameters you want to edit (e.g., Prompts, Seed, Checkpoint). Unselected nodes will remain hidden to keep the UI clean.
+3.  **Generation Settings:**
+    *   **Batch Count:** Set how many images to generate in a row.
+    *   **Random Seed:** Check this to get a unique variation for every image in the batch.
+    *   **🌐 Translate (AI):** Use the built-in offline tool to translate your prompts from Polish to English.
+4.  **Results:**
+    *   **Left Click** on a generated image to view it in **Fullscreen**.
+    *   Click **"💾 Save PNG"** to save the image to your disk.
+    *   Click **"⛔ Stop All"** to immediately cancel generation and clear the queue.
+
 ## 🔧 Requirements
 
 *   Windows 10/11
 *   ComfyUI Portable version
 *   WebView2 Runtime (usually pre-installed on Windows)
 
----
-
-## 🔧 Wymagania
-
-*   System Windows 10 lub 11.
-*   Zainstalowane ComfyUI w wersji Portable.
